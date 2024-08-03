@@ -15,14 +15,38 @@ soup = BeautifulSoup(req.text,"html.parser")
 
 # 要素の抽出
 title = soup.find("title").text
-#aaa = soup.select("div table tbody tr td.table_cells")
 
+
+rankerName = []
+# ↓注意！文字列型です
+rankerVal = []
+vals = []
+
+for s in soup.select('h2:-soup-contains("機種別データピックアップ") ~ div p a')[:20]:
+    rankerName.append(s.get_text())
+for i, s in enumerate(soup.select('h2:-soup-contains("機種別データピックアップ") ~ div td')[:80]):
+    match (i+1)%4:
+        case 0:
+            # winrate計算
+            text = s.get_text()
+            pnum = text.find('/')
+            rate = float(text[pnum-1]) /  float(text[pnum+1])
+            
+            vals.append({'WinRate':rate})
+            rankerVal.append(vals)
+            vals = []
+        case 1:
+            vals.append(s.get_text())
+        case 2:
+            vals.append(s.get_text())
+        case 3:
+            vals.append(s.get_text())
+
+# (機種名, [機種別差枚,平均差枚,平均Ｇ数,勝率])
 ranker = []
 
-for s in soup.select('h2:-soup-contains("機種別データピックアップ") ~ div td')[:80]:
-    ranker.append(s.get_text())
-
-
+for name, val in zip(rankerName, rankerVal):
+    ranker.append({name:val})
 
 #items = bsObj.find_all("li")
 #item = items.find("a").get("href")
